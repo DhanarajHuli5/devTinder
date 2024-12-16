@@ -6,13 +6,13 @@ const User = require("./models/user")
 app.use(express.json())
 app.post("/signup", async (req,res) => {
     // creating a new instance of User model
-    const user = new User(req.body);
     try {
+      const user = new User(req.body);
       await user.save()
       res.send("User added successfully")
     } catch (error) {
       console.log(error)
-      res.status(500).send(error.errmsg)
+      res.status(500).send(error.message)
     }
    
     
@@ -59,14 +59,14 @@ app.delete("/user", async (req,res) => {
 })
 
 
-app.patch("/user", async (req,res) => {
-  const userId = req.body.userId;
+app.patch("/user/:userId", async (req,res) => {
+  const userId = req.params?.userId;
   const data = req.body;
 
   try{
 
     //allowed updates
-    const ALLOWED_UPDATES =["userId","photoUrl","about","gender","age","skills"];
+    const ALLOWED_UPDATES =["photoUrl","about","gender","age","skills"];
 
     const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATES.includes(k)
     )
