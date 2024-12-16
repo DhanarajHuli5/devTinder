@@ -64,6 +64,17 @@ app.patch("/user", async (req,res) => {
   const data = req.body;
 
   try{
+
+    //allowed updates
+    const ALLOWED_UPDATES =["userId","photoUrl","about","gender","age","skills"];
+
+    const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATES.includes(k)
+    )
+
+    if(!isUpdateAllowed){
+      throw new Error("Update not allowed he he");
+    }
+
     const user = await User.findByIdAndUpdate({_id: userId}, data, {
       returnDocument:"after",
       runValidators: true,
