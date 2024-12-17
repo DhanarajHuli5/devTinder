@@ -2,17 +2,34 @@ const express = require("express");
 const connectDB = require("./config/database")
 const app = express();
 const User = require("./models/user")
+const { validateSignUpData} = require("./utils/validation")
+const bcrypt = require("bcrypt");   
+const { default: isEmail } = require("validator/lib/isEmail");
+const validator = require("validator")
+
 
 app.use(express.json())
 app.post("/signup", async (req,res) => {
-    // creating a new instance of User model
-    try {
-      const user = new User(req.body);
+  // creating a new instance of User model
+  try {
+      // Validation of data
+      validateSignUpData(req)
+
+    const { firstName, lastName, emailId, password } = req.body;
+
+      // Encrypt the password
+      const passwordHash = await bcrypt.hash(password,10)
+
+
+
+      const user = new User({
+        firstName,lastName, emailId, password: passwordHash
+      });
       await user.save()
       res.send("User added successfully")
     } catch (error) {
       console.log(error)
-      res.status(500).send(error.message)
+      res.status(500).send("ERROR " + error.message)
     }
    
     
@@ -35,8 +52,6 @@ app.get("/user", async (req,res) => {
   
 })
 
-
-
 // Feed API - GET /feed - get all users from the database
 app.get("/feed", async (req,res) => {
   try{
@@ -44,6 +59,36 @@ app.get("/feed", async (req,res) => {
     res.send(user);
   } catch (error) {
     res.status(400).send("Something went wrong")
+  }
+})
+
+// Login API
+app.post("/login", async (req,res) => {
+  try{
+
+    const { emailId , password } = req.body;
+    if(!validator.isEmail(emailId)){
+      throw new Error("Invalid emailId")
+    }
+
+    const user = await User.findOne({emailId: emailId})
+    if(!user){
+      throw new Error("Invalid credentials")
+    }
+
+    const isPasswordValid = await  bcrypt.compare(password,user.password)
+
+    if(isPasswordValid){
+      res.send("Login successfull !!")
+    } else {
+      throw new Error("Invalid credentials")
+    }
+
+
+
+
+  } catch (err){
+    res.status(400).send("ERROR : " + err.message)
   }
 })
 
