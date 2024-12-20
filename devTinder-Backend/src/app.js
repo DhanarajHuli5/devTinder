@@ -43,7 +43,7 @@ app.post("/login", async (req,res) => {
     }
 
     const user = await User.findOne({emailId: emailId})
-    if(!user){
+    if(!user){  
       throw new Error("Invalid credentials")
     }
 
