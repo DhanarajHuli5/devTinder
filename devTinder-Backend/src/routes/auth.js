@@ -3,7 +3,8 @@ const authRouter = express.Router();
 const { validateSignUpData} = require("../utils/validation")
 const User = require("../models/user")
 const bcrypt = require("bcrypt"); 
-const validator = require("validator")
+const validator = require("validator");
+const { userAuth } = require("../middlewares/auth");
 authRouter.post("/signup", async (req, res) => {
   // creating a new instance of User model
   try {
@@ -55,12 +56,26 @@ authRouter.post("/login", async (req, res) => {
   }
 });
 
-authRouter.post("/logout", (req, res) => {
-  res
-  .cookie("token", null, {
-    expires: new Date(Date.now()),
-  })
-  .send("Logout successfull !!");
-  
-})
+authRouter.post("/logout",userAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    const userResponse = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      emailId: user.emailId
+    };
+    res
+      .cookie("token", null, {
+        expires: new Date(Date.now()),
+      })
+      .json({ 
+        success: true, 
+        message: "Logout successful", 
+        userData: userResponse 
+      });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 module.exports = authRouter;
