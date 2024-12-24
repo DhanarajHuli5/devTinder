@@ -7,7 +7,8 @@ const User = require("../models/user")
 requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res) => {
     
   try {
-    const fromUserId = req.user._id;
+    const fromUser = req.user;
+    const fromUserId = fromUser._id;
     const toUserId = req.params.toUserId;
     const status = req.params.status;
 
@@ -40,7 +41,11 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res)
     } 
 
     const connectionRequest = new ConnectionRequest({
-      fromUserId, toUserId,status
+      fromUserId,
+      toUserId,
+      status,
+      fromUserName: `${fromUser.firstName} ${fromUser.lastName}`,
+      toUserName: `${toUser.firstName} ${toUser.lastName}`
     })
 
     const data = await connectionRequest.save()
@@ -98,4 +103,4 @@ requestRouter.post("/request/review/:statuss/:requestId", userAuth, async (req, 
 
 })
 
-module.exports = requestRouter 
+module.exports = requestRouter
